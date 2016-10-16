@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:tools="http://schemas.android.com/tools"
+      xmlns:app="http://schemas.android.com/apk/res-auto"
+      xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item android:title="@string/refresh"
+        android:id="@+id/refresh"
+          android:showAsAction="never"
+          android:icon="@mipmap/ic_menu_refresh"
+          tools:ignore="AppCompatResource"/>
+</menu>
