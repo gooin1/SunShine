@@ -58,7 +58,9 @@ public class ForecastFragment extends Fragment {
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.refresh:
-
+                // 执行后台线程:获取json
+                FetchWeatherTask weatherTask = new FetchWeatherTask();
+                weatherTask.execute();
                 return true;
 
             default:
