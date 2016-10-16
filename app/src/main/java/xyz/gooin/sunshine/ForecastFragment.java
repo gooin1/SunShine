@@ -66,8 +66,6 @@ public class ForecastFragment extends Fragment {
             default:
                 return super.onOptionsItemSelected(item);
         }
-
-
     }
 
     @Override
