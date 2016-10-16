@@ -191,6 +191,10 @@ public class ForecastFragment extends Fragment {
         }
 
 
+        public FetchWeatherTask() {
+            super();
+        }
+
         @Override
         protected String[] doInBackground(String... params) {
 
@@ -261,7 +265,7 @@ public class ForecastFragment extends Fragment {
                 }
                 forecastJsonStr = buffer.toString();
                 // show json in logcat
-                Log.i(TAG, "doInBackground: JSON : " + forecastJsonStr);
+//                Log.i(TAG, "doInBackground: JSON : " + forecastJsonStr);
 
             } catch (IOException e) {
                 Log.e("PlaceholderFragment", "Error ", e);
@@ -282,12 +286,19 @@ public class ForecastFragment extends Fragment {
             }
 
             try {
-                return getWeatherDataFromJson(forecastJsonStr,numDays);
+                return getWeatherDataFromJson(forecastJsonStr, numDays);
             } catch (JSONException e) {
                 e.printStackTrace();
             }
-
             return null;
+        }
+
+        @Override
+        protected void onPostExecute(String[] result) {
+            if (result != null) {
+                mForecastAdapter.clear();
+                mForecastAdapter.addAll(result);
+            }
         }
     }
 
