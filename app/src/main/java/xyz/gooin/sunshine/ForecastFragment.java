@@ -1,5 +1,6 @@
 package xyz.gooin.sunshine;
 
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -35,7 +36,7 @@ import static android.content.ContentValues.TAG;
  * A placeholder fragment containing a simple view.
  */
 public class ForecastFragment extends Fragment {
-    public static final String API_KEY = "&APPID=b4eee530b641f9cf598669268e3f7a9c";
+    public static final String API_KEY = "b4eee530b641f9cf598669268e3f7a9c";
     ArrayAdapter<String> mForecastAdapter;
 
     public ForecastFragment() {
@@ -62,7 +63,7 @@ public class ForecastFragment extends Fragment {
             case R.id.refresh:
                 // 执行后台线程:获取json
                 FetchWeatherTask weatherTask = new FetchWeatherTask();
-                weatherTask.execute();
+                weatherTask.execute("73160");
                 return true;
 
             default:
@@ -107,10 +108,16 @@ public class ForecastFragment extends Fragment {
     }
 
     // 用 AsyncTask 新开一个线程 来访问网络
-    public class FetchWeatherTask extends AsyncTask<Void, Void, Void> {
+    public class FetchWeatherTask extends AsyncTask<String, Void, Void> {
 
         @Override
-        protected Void doInBackground(Void... voids) {
+        protected Void doInBackground(String... params) {
+
+            // 如果没有邮政编码,就没啥可查询的
+            if (params.length == 0) {
+                return null;
+            }
+
             // These two need to be declared outside the try/catch
             // so that they can be closed in the finally block.
             HttpURLConnection urlConnection = null;
@@ -119,12 +126,31 @@ public class ForecastFragment extends Fragment {
             // Will contain the raw JSON response as a string.
             String forecastJsonStr = null;
 
+            String format = "json";
+            String units = "metric";
+            int numDays = 7;
             try {
                 // Construct the URL for the OpenWeatherMap query
                 // Possible parameters are available at OWM's forecast API page, at
                 // http://openweathermap.org/API#forecast
-                String baseUrl = "http://api.openweathermap.org/data/2.5/forecast/daily?q=94043&mode=json&units=metric&cnt=7";
-                URL url = new URL(baseUrl.concat(API_KEY));
+                final String FORECAST_BASE_URL = "http://api.openweathermap.org/data/2.5/forecast/daily?";
+                final String QUERY_PARAM = "q";
+                final String FORMAT_PARAM = "MODE";
+                final String UNIT_PARAM = "units";
+                final String DAYS_PARAM = "cnt";
+                final String APPID_PARAM = "APPID";
+
+                // 用 URi 构建查询网址
+                Uri builtUrl = Uri.parse(FORECAST_BASE_URL).buildUpon()
+                        .appendQueryParameter(QUERY_PARAM,params[0])
+                        .appendQueryParameter(FORMAT_PARAM,format)
+                        .appendQueryParameter(UNIT_PARAM,units)
+                        .appendQueryParameter(DAYS_PARAM,Integer.toString(numDays))
+                        .appendQueryParameter(APPID_PARAM,API_KEY)
+                        .build();
+
+                URL url = new URL(builtUrl.toString());
+                Log.i(TAG, "doInBackground: URI " + builtUrl.toString());
 
                 // Create the request to OpenWeatherMap, and open the connection
                 urlConnection = (HttpURLConnection) url.openConnection();
