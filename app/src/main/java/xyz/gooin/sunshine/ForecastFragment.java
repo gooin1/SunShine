@@ -15,12 +15,17 @@ import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -108,10 +113,86 @@ public class ForecastFragment extends Fragment {
     }
 
     // 用 AsyncTask 新开一个线程 来访问网络
-    public class FetchWeatherTask extends AsyncTask<String, Void, Void> {
+    public class FetchWeatherTask extends AsyncTask<String, Void, String[]> {
+
+
+        /* The date/time conversion code is going to be moved outside the asynctask later,
+         * so for convenience we're breaking it out into its own method now.
+         */
+        private String getReadableDateString(long time) {
+            // Because the API returns a unix timestamp (measured in seconds),
+            // it must be converted to milliseconds in order to be converted to valid date.
+            SimpleDateFormat shortenedDateFormat = new SimpleDateFormat("EEE MMM dd");
+            return shortenedDateFormat.format(time);
+        }
+
+        /**
+         * Prepare the weather high/lows for presentation.
+         */
+        private String formatHighLows(double high, double low) {
+            // For presentation, assume the user doesn't care about tenths of a degree.
+            long roundedHigh = Math.round(high);
+            long roundedLow = Math.round(low);
+
+            String highLowStr = roundedHigh + "/" + roundedLow;
+            return highLowStr;
+        }
+
+        private String[] getWeatherDataFromJson(String forecastJsonStr, int numDays) throws JSONException {
+
+            // 要提取的 JSON 对象
+            final String OWN_LIST = "list";
+            final String OWN_WEATHER = "weather";
+            final String OWN_TEMPERATURE = "temp";
+            final String OWN_MAX = "max";
+            final String OWN_MIN = "min";
+            final String OWN_DESCRIPTION = "main";
+
+            JSONObject forecastJson = new JSONObject(forecastJsonStr);
+            JSONArray weatherArray = forecastJson.getJSONArray(OWN_LIST);
+
+            android.text.format.Time dayTime = new android.text.format.Time();
+            dayTime.setToNow();
+
+            int julanStartDay = android.text.format.Time.getJulianDay(System.currentTimeMillis(), dayTime.gmtoff);
+
+            dayTime = new android.text.format.Time();
+
+            String[] resultStrs = new String[numDays];
+            for (int i = 0; i < weatherArray.length(); i++) {
+                String day;
+                String description;
+                String highAndLow;
+
+                JSONObject dayForecast = weatherArray.getJSONObject(i);
+
+                long dateTime;
+
+                dateTime = dayTime.setJulianDay(julanStartDay + i);
+                day = getReadableDateString(dateTime);
+
+                JSONObject weatherObject = dayForecast.getJSONArray(OWN_WEATHER).getJSONObject(0);
+                description = weatherObject.getString(OWN_DESCRIPTION);
+
+                JSONObject temperatureObject = dayForecast.getJSONObject(OWN_TEMPERATURE);
+                double high = temperatureObject.getDouble(OWN_MAX);
+                double low = temperatureObject.getDouble(OWN_MIN);
+
+                highAndLow = formatHighLows(high, low);
+
+                resultStrs[i] = day + "-" + description + "-" + highAndLow;
+            }
+            for (String s : resultStrs
+                    ) {
+                Log.i(TAG, "getWeatherDataFromJson: " + s);
+
+            }
+            return resultStrs;
+        }
+
 
         @Override
-        protected Void doInBackground(String... params) {
+        protected String[] doInBackground(String... params) {
 
             // 如果没有邮政编码,就没啥可查询的
             if (params.length == 0) {
@@ -142,11 +223,11 @@ public class ForecastFragment extends Fragment {
 
                 // 用 URi 构建查询网址
                 Uri builtUrl = Uri.parse(FORECAST_BASE_URL).buildUpon()
-                        .appendQueryParameter(QUERY_PARAM,params[0])
-                        .appendQueryParameter(FORMAT_PARAM,format)
-                        .appendQueryParameter(UNIT_PARAM,units)
-                        .appendQueryParameter(DAYS_PARAM,Integer.toString(numDays))
-                        .appendQueryParameter(APPID_PARAM,API_KEY)
+                        .appendQueryParameter(QUERY_PARAM, params[0])
+                        .appendQueryParameter(FORMAT_PARAM, format)
+                        .appendQueryParameter(UNIT_PARAM, units)
+                        .appendQueryParameter(DAYS_PARAM, Integer.toString(numDays))
+                        .appendQueryParameter(APPID_PARAM, API_KEY)
                         .build();
 
                 URL url = new URL(builtUrl.toString());
@@ -180,7 +261,7 @@ public class ForecastFragment extends Fragment {
                 }
                 forecastJsonStr = buffer.toString();
                 // show json in logcat
-                Log.i(TAG, "doInBackground: JSON : " + forecastJsonStr) ;
+                Log.i(TAG, "doInBackground: JSON : " + forecastJsonStr);
 
             } catch (IOException e) {
                 Log.e("PlaceholderFragment", "Error ", e);
@@ -199,6 +280,13 @@ public class ForecastFragment extends Fragment {
                     }
                 }
             }
+
+            try {
+                return getWeatherDataFromJson(forecastJsonStr,numDays);
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+
             return null;
         }
     }
