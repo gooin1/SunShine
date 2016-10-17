@@ -17,6 +17,6 @@
     <!-- Menu label to fetch updated weather info from the server -->
     <string name="refresh" translatable="false">Refresh</string>
     <string name="hello_world">Hello world!</string>
-    <string name="title_activity_detail">DetailActivity</string>
+    <string name="title_activity_detail">Detail</string>
 
 </resources>

@@ -113,6 +113,7 @@ public class ForecastFragment extends Fragment {
         // 向 listview 传入天气数据
         listView.setAdapter(mForecastAdapter);
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
 
@@ -120,6 +121,7 @@ public class ForecastFragment extends Fragment {
                 Toast.makeText(getActivity(),"hello", Toast.LENGTH_SHORT).show();
                 // 使用显示 intent 打开DetailActivity
                 Intent intent = new Intent(getActivity(), DetailActivity.class)
+                        // 存入数据
                         .putExtra(Intent.EXTRA_TEXT, forecast);
                 startActivity(intent);
 
