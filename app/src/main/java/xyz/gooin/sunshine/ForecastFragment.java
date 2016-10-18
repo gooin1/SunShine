@@ -62,6 +62,8 @@ public class ForecastFragment extends Fragment {
         super.onCreateOptionsMenu(menu, inflater);
         // 传入菜单文件的资源id,填充到 Menu 实例中
         inflater.inflate(R.menu.forecastfragment, menu);
+        inflater.inflate(R.menu.detail, menu);
+
     }
 
     // 响应菜单的点击
@@ -73,6 +75,9 @@ public class ForecastFragment extends Fragment {
                 FetchWeatherTask weatherTask = new FetchWeatherTask();
                 weatherTask.execute("73160");
                 return true;
+            case R.id.action_settings:
+                Intent intent = new Intent(getActivity(), SettingsActivity.class);
+                startActivity(intent);
 
             default:
                 return super.onOptionsItemSelected(item);
