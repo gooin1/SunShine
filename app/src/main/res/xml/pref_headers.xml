@@ -1,6 +1,11 @@
 <preference-headers xmlns:android="http://schemas.android.com/apk/res/android">
 
     <!-- These settings headers are only used on tablets. -->
+    <header
+        android:fragment="xyz.gooin.sunshine.SettingsActivity$LocationPreferenceFragment"
+     android:icon="@drawable/location"
+        android:title="@string/pref_location_label"/>
+
 
     <header
         android:fragment="xyz.gooin.sunshine.SettingsActivity$GeneralPreferenceFragment"
@@ -16,5 +21,6 @@
         android:fragment="xyz.gooin.sunshine.SettingsActivity$DataSyncPreferenceFragment"
         android:icon="@drawable/ic_sync_black_24dp"
         android:title="@string/pref_header_data_sync"/>
+
 
 </preference-headers>
