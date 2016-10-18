@@ -1,9 +1,11 @@
 package xyz.gooin.sunshine;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.util.Log;
@@ -73,7 +75,13 @@ public class ForecastFragment extends Fragment {
             case R.id.refresh:
                 // 执行后台线程:获取json
                 FetchWeatherTask weatherTask = new FetchWeatherTask();
-                weatherTask.execute("73160");
+//                weatherTask.execute("73160");
+
+                // 读取设置中更新的参数
+                SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getActivity());
+                String location = preferences.getString(getString(R.string.pref_location_key), getString(R.string.pref_location_default));
+                Log.i(TAG, "onOptionsItemSelected: location :" + location);
+                weatherTask.execute(location);
                 return true;
             case R.id.action_settings:
                 Intent intent = new Intent(getActivity(), SettingsActivity.class);
