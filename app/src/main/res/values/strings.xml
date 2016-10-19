@@ -45,6 +45,17 @@
         <item>When possible</item>
         <item>Never</item>
     </string-array>
+
+    <!--天气单位-->
+    <string name="pref_temperature_units">Temperature Units</string>
+    <string name="pref_temperature_default">metric</string>
+    <string name="pref_temperture_key">temperature_units</string>
+    <string-array name="pref_temperature_units_value">
+        <item>metric</item>
+        <item>imperial</item>
+    </string-array>
+
+
     <string-array name="pref_example_list_values">
         <item>1</item>
         <item>0</item>

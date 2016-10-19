@@ -32,8 +32,6 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 
 import static android.content.ContentValues.TAG;
 
@@ -48,6 +46,7 @@ import static android.content.ContentValues.TAG;
 public class ForecastFragment extends Fragment {
     public static final String API_KEY = "b4eee530b641f9cf598669268e3f7a9c";
     ArrayAdapter<String> mForecastAdapter;
+    String units = null;
 
     public ForecastFragment() {
     }
@@ -73,19 +72,14 @@ public class ForecastFragment extends Fragment {
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.refresh:
-                // 执行后台线程:获取json
-                FetchWeatherTask weatherTask = new FetchWeatherTask();
-//                weatherTask.execute("73160");
 
-                // 读取设置中更新的参数
-                SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getActivity());
-                String location = preferences.getString(getString(R.string.pref_location_key), getString(R.string.pref_location_default));
-                Log.i(TAG, "onOptionsItemSelected: location :" + location);
-                weatherTask.execute(location);
+                updateWeather();
                 return true;
+
             case R.id.action_settings:
                 Intent intent = new Intent(getActivity(), SettingsActivity.class);
                 startActivity(intent);
+
 
             default:
                 return super.onOptionsItemSelected(item);
@@ -99,27 +93,13 @@ public class ForecastFragment extends Fragment {
 
         View rootView = inflater.inflate(R.layout.fragment_main, container, false);
 
-        // 创建一些示例数据. 此处显示示例天气预报
-        String[] data = {
-                "10/12 - 晴 - 真tm冷",
-                "10/13 - 阴 - 贼冷",
-                "10/14 - 晴 - hot",
-                "Fri 6/27 - Foggy - 21/10",
-                "10/15 - 晴 - rain",
-                "10/16 - 晴 - 穿了衣服和没穿一样",
-                "10/17 - 晴 - 暴风呼啸"
-        };
-
-        List<String> weekForecast = new ArrayList<String>(Arrays.asList(data));
-
-
         //  新建一个 Adapter 从资源中获取数据(比如新建的示例数据)
         //  用 Adapter 来向 ListView 中添加数据
         mForecastAdapter = new ArrayAdapter<String>(
                 getActivity(),                      //
                 R.layout.list_item_forecast,        // layout的名字
                 R.id.list_item_forecast_textview,   // textview的 id
-                weekForecast);                      // 传入的数据(使用上面的示例数据)
+                new ArrayList<String>());            // 传入的数据(使用上面的示例数据)
 
 
         ListView listView = (ListView) rootView.findViewById(R.id.listview_forecast);
@@ -141,6 +121,29 @@ public class ForecastFragment extends Fragment {
             }
         });
         return rootView;
+    }
+
+    // 传入参数更新 天气
+    private void updateWeather() {
+        // 执行后台线程:获取json
+        FetchWeatherTask weatherTask = new FetchWeatherTask();
+//                weatherTask.execute("73160");
+
+        // 读取设置中更新的参数 : 获取邮政编码
+        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getActivity());
+        String location = preferences.getString(getString(R.string.pref_location_key), getString(R.string.pref_location_default));
+        Log.i(TAG, "onOptionsItemSelected: location :" + location);
+        weatherTask.execute(location);
+        // 读取设置参数 更新 单位
+        units = preferences.getString(getString(R.string.pref_location_key), getString(R.string.pref_location_default));
+
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+        // 创建Fragment时更新天气数据
+        updateWeather();
     }
 
     // 用 AsyncTask 新开一个线程 来访问网络
@@ -211,7 +214,7 @@ public class ForecastFragment extends Fragment {
 
                 highAndLow = formatHighLows(high, low);
 
-                resultStrs[i] = day + "-" + description + "-" + highAndLow;
+                resultStrs[i] = day + " - " + description + " - " + highAndLow;
             }
             for (String s : resultStrs
                     ) {
@@ -243,7 +246,7 @@ public class ForecastFragment extends Fragment {
             String forecastJsonStr = null;
 
             String format = "json";
-            String units = "metric";
+//            String units = "metric";
             int numDays = 7;
             try {
                 // Construct the URL for the OpenWeatherMap query
@@ -266,7 +269,7 @@ public class ForecastFragment extends Fragment {
                         .build();
 
                 URL url = new URL(builtUrl.toString());
-                Log.i(TAG, "doInBackground: URI " + builtUrl.toString());
+                Log.i(TAG, "doInBackground: URL = " + url);
 
                 // Create the request to OpenWeatherMap, and open the connection
                 urlConnection = (HttpURLConnection) url.openConnection();
