@@ -46,7 +46,6 @@ import static android.content.ContentValues.TAG;
 public class ForecastFragment extends Fragment {
     public static final String API_KEY = "b4eee530b641f9cf598669268e3f7a9c";
     ArrayAdapter<String> mForecastAdapter;
-    String units = null;
 
     public ForecastFragment() {
     }
@@ -134,8 +133,6 @@ public class ForecastFragment extends Fragment {
         String location = preferences.getString(getString(R.string.pref_location_key), getString(R.string.pref_location_default));
         Log.i(TAG, "onOptionsItemSelected: location :" + location);
         weatherTask.execute(location);
-        // 读取设置参数 更新 单位
-        units = preferences.getString(getString(R.string.pref_location_key), getString(R.string.pref_location_default));
 
     }
 
@@ -163,7 +160,18 @@ public class ForecastFragment extends Fragment {
         /**
          * Prepare the weather high/lows for presentation.
          */
-        private String formatHighLows(double high, double low) {
+        private String formatHighLows(double high, double low ,String unitType) {
+            if (unitType.equals(getString(R.string.pref_temperature_units_imperial))) {
+                high = (high * 1.8) + 32;
+                low = (low * 1.8) + 32;
+            } else if (!unitType.equals(getString(R.string.pref_temperature_units_metric))) {
+                Log.d(TAG, " UNIT ERROR" + unitType);
+            }
+
+
+
+
+
             // For presentation, assume the user doesn't care about tenths of a degree.
             long roundedHigh = Math.round(high);
             long roundedLow = Math.round(low);
@@ -193,6 +201,12 @@ public class ForecastFragment extends Fragment {
             dayTime = new android.text.format.Time();
 
             String[] resultStrs = new String[numDays];
+
+            // 从设置中获取设定的温度单位
+            SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getActivity());
+            String unitType = sharedPreferences.getString(getString(R.string.pref_temperature_key),getString(R.string.pref_temperature_units_metric));
+
+
             for (int i = 0; i < weatherArray.length(); i++) {
                 String day;
                 String description;
@@ -212,7 +226,7 @@ public class ForecastFragment extends Fragment {
                 double high = temperatureObject.getDouble(OWN_MAX);
                 double low = temperatureObject.getDouble(OWN_MIN);
 
-                highAndLow = formatHighLows(high, low);
+                highAndLow = formatHighLows(high, low ,unitType);
 
                 resultStrs[i] = day + " - " + description + " - " + highAndLow;
             }
@@ -246,7 +260,7 @@ public class ForecastFragment extends Fragment {
             String forecastJsonStr = null;
 
             String format = "json";
-//            String units = "metric";
+            String units = "metric";
             int numDays = 7;
             try {
                 // Construct the URL for the OpenWeatherMap query
