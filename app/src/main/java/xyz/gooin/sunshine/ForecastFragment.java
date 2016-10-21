@@ -71,19 +71,19 @@ public class ForecastFragment extends Fragment {
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.refresh:
-
                 updateWeather();
                 return true;
 
             case R.id.action_settings:
-                Intent intent = new Intent(getActivity(), SettingsActivity.class);
-                startActivity(intent);
-
+                Intent settingsIntent = new Intent(getActivity(), SettingsActivity.class);
+                startActivity(settingsIntent);
+                return true;
 
             default:
                 return super.onOptionsItemSelected(item);
         }
     }
+
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -127,7 +127,6 @@ public class ForecastFragment extends Fragment {
         // 执行后台线程:获取json
         FetchWeatherTask weatherTask = new FetchWeatherTask();
 //                weatherTask.execute("73160");
-
         // 读取设置中更新的参数 : 获取邮政编码
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getActivity());
         String location = preferences.getString(getString(R.string.pref_location_key), getString(R.string.pref_location_default));
