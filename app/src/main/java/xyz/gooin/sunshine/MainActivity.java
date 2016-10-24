@@ -48,7 +48,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void actionMap() {
-        //
+        // 接受设置传入的参数
         SharedPreferences sharedPrefs = PreferenceManager.getDefaultSharedPreferences(this);
         String loaction = sharedPrefs.getString(getString(R.string.pref_location_key), getString(R.string.pref_location_default));
 
